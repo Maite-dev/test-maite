@@ -1,6 +1,14 @@
-import type { Metadata } from "next";
+"use client";
+
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { Providers } from "../store/providers"; // Asegúrate de la ruta correcta
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { renewToken } from "../store/authSlice";
+import type { AppDispatch } from "../store/store";
+import Header from "@/components/Header"; // Importa el encabezado
+import LayoutMetadata from "./layout-metadata"; // Importa el componente de metadata
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -12,22 +20,37 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Grupo HS",
-  description: "Administración de Comerciales",
-};
-
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
+  return (
+    <LayoutMetadata>
+      <Providers>
+        <Content>{children}</Content>
+      </Providers>
+    </LayoutMetadata>
+  );
+}
+
+function Content({ children }: { children: React.ReactNode }) {
+  const dispatch = useDispatch<AppDispatch>();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      dispatch(renewToken());
+    }
+  }, [dispatch]);
+
   return (
     <html lang="es">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <Header />
+        <main>{children}</main>
       </body>
     </html>
   );

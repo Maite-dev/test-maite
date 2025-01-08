@@ -1,7 +1,23 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { login } from "@/store/authSlice";
+import { AppDispatch, RootState } from "@/store/store";
 
 const LoginCard = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const dispatch = useDispatch<AppDispatch>();
+  const { loading, error } = useSelector((state: RootState) => state.auth);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    dispatch(login({ email, password }));
+  };
+
   return (
     <div className="base relative w-full h-screen">
       <img
@@ -10,7 +26,7 @@ const LoginCard = () => {
         className="lg:block hidden absolute w-full z-4 bottom-0 left-0 object-contain"
       />
       <div className="relative h-32 md:h-48 w-full bg-customOrange">
-        <div className="absolute top-3 md:top-8 left-1/2 transform -translate-x-1/2 ">
+        <div className="absolute top-3 md:top-8 left-1/2 transform -translate-x-1/2">
           <Image
             src="/images/logo-grupo-hs.png"
             alt="logo grupo HS"
@@ -21,7 +37,7 @@ const LoginCard = () => {
         </div>
         <section className="absolute top-1/2 left-1/2 transform -translate-x-1/2 w-full max-w-[340px] p-8 text-center bg-grey-900 text-white rounded-lg shadow-lg">
           <h1 className="text-2xl font-bold mb-6">Iniciar Sesión</h1>
-          <form className="flex flex-col gap-4">
+          <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
             <div className="text-left">
               <label
                 htmlFor="email"
@@ -32,6 +48,8 @@ const LoginCard = () => {
               <input
                 type="email"
                 id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="mt-1 block w-full p-2 bg-grey-700 text-gray-700 rounded-lg border border-gray-600 focus:outline-none focus:border-customGreen"
                 placeholder="ejemplo@correo.com"
                 required
@@ -47,6 +65,8 @@ const LoginCard = () => {
               <input
                 type="password"
                 id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="mt-1 block w-full p-2 bg-grey-700 text-gray-700 rounded-lg border border-gray-600 focus:outline-none focus:border-customGreen"
                 placeholder="••••••••"
                 required
@@ -54,11 +74,24 @@ const LoginCard = () => {
             </div>
             <button
               type="submit"
-              className="w-full bg-customOrange hover:bg-orange-600 text-white font-semibold py-3 px-4 rounded-lg cursor-pointer transition duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-105"
+              disabled={loading}
+              className={`w-full bg-customOrange hover:bg-orange-600 text-white font-semibold py-3 px-4 rounded-lg cursor-pointer transition duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-105 ${
+                loading ? "opacity-50 cursor-not-allowed" : ""
+              }`}
             >
-              Iniciar Sesión
+              {loading ? "Cargando..." : "Iniciar Sesión"}
             </button>
           </form>
+          {error && (
+  <p className="mt-4 text-sm text-red-500">
+    {typeof error === "object" && "message" in error
+      ? (error as { message: string }).message
+      : typeof error === "string"
+      ? error
+      : "Error al iniciar sesión"}
+  </p>
+)}
+
           <footer className="mt-6">
             <p className="text-sm text-gray-400">
               <Link href="/auth/recover-password" className="text-customGreen">
